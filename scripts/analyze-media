@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# analyze-media <video-url> [browser]
+# Downloads a social media video (Instagram reel, TikTok, YouTube Short, etc.) and prepares it
+# for Claude to analyze: caption/metadata, audio transcript, sampled frames.
+# Reuses your logged-in browser cookies (default: chrome) so login-gated content works.
+# Output: ~/social-media-analysis/<id>/  (caption.txt, meta.json, transcript.txt, frames/*.jpg, video.*)
+set -euo pipefail
+
+URL="${1:-}"
+BROWSER="${2:-chrome}"
+MODEL="$HOME/.cache/whisper-cpp/ggml-base.bin"
+[ -n "$URL" ] || { echo "usage: analyze-media <video-url> [browser]"; exit 1; }
+
+for bin in yt-dlp ffmpeg; do
+  command -v "$bin" >/dev/null || { echo "missing dependency: $bin (see SKILL.md setup)"; exit 1; }
+done
+
+OUTROOT="$HOME/social-media-analysis"
+# id = Instagram/TikTok/YouTube shortcode when we can find one, else a slug of the whole URL
+ID="$(printf '%s' "$URL" | sed -n 's#.*\(instagram\.com/\(reel\|reels\|p\|tv\)\|tiktok\.com/.*/video\|youtu\.be\|youtube\.com/\(shorts\|watch\)\)[/?=]*\([A-Za-z0-9_-]*\).*#\4#p')"
+[ -n "$ID" ] || ID="$(printf '%s' "$URL" | tr -c 'A-Za-z0-9' '_' | cut -c1-40)"
+DIR="$OUTROOT/$ID"
+mkdir -p "$DIR/frames"
+
+echo "==> downloading (cookies from $BROWSER)"
+# Try with browser cookies first (needed for login-gated), fall back to no cookies for public posts.
+if ! yt-dlp --cookies-from-browser "$BROWSER" \
+      --write-info-json --write-description --no-write-playlist-metafiles \
+      -o "$DIR/video.%(ext)s" "$URL" 2>"$DIR/yt-dlp.log"; then
+  echo "    cookie download failed, retrying without cookies (public only)"
+  yt-dlp --write-info-json --write-description \
+      -o "$DIR/video.%(ext)s" "$URL" 2>>"$DIR/yt-dlp.log" \
+    || { echo "yt-dlp failed. See $DIR/yt-dlp.log"; tail -5 "$DIR/yt-dlp.log"; exit 1; }
+fi
+
+VIDEO="$(find "$DIR" -maxdepth 1 -name 'video.*' ! -name '*.json' ! -name '*.description' | head -1)"
+[ -n "$VIDEO" ] || { echo "no video file downloaded"; exit 1; }
+
+# caption + tidy metadata
+cp -f "$DIR"/video*.description "$DIR/caption.txt" 2>/dev/null || echo "(no caption)" > "$DIR/caption.txt"
+INFO="$(find "$DIR" -maxdepth 1 -name 'video*.info.json' | head -1)"
+if [ -n "$INFO" ] && command -v python3 >/dev/null; then
+  python3 - "$INFO" "$DIR/meta.json" <<'PY'
+import json,sys
+d=json.load(open(sys.argv[1]))
+keep=["uploader","channel","title","description","duration","view_count","like_count","comment_count","upload_date","webpage_url"]
+json.dump({k:d.get(k) for k in keep}, open(sys.argv[2],"w"), indent=2, ensure_ascii=False)
+PY
+fi
+
+echo "==> transcribing audio"
+if [ -f "$MODEL" ] && command -v whisper-cli >/dev/null; then
+  ffmpeg -y -i "$VIDEO" -ar 16000 -ac 1 -vn "$DIR/audio.wav" 2>/dev/null
+  whisper-cli -m "$MODEL" -f "$DIR/audio.wav" -otxt -of "$DIR/transcript" 2>/dev/null || true
+  [ -f "$DIR/transcript.txt" ] || echo "(transcription failed)" > "$DIR/transcript.txt"
+else
+  echo "(whisper model/binary missing - see SKILL.md setup)" > "$DIR/transcript.txt"
+fi
+
+echo "==> sampling frames"
+# 1 frame / 3s, downscaled, hard-capped at 40 frames.
+# ponytail: fixed interval + cap; switch to scene-detect (-vf select='gt(scene,0.4)') if fixed sampling misses cuts.
+ffmpeg -y -i "$VIDEO" -vf "fps=1/3,scale=640:-2" -frames:v 40 "$DIR/frames/f%03d.jpg" 2>/dev/null || true
+
+echo
+echo "DONE -> $DIR"
+echo "  caption.txt   : $(wc -c < "$DIR/caption.txt" | tr -d ' ') bytes"
+echo "  transcript.txt: $(wc -c < "$DIR/transcript.txt" | tr -d ' ') bytes"
+echo "  frames        : $(ls "$DIR/frames" 2>/dev/null | wc -l | tr -d ' ') images"
+[ -f "$DIR/meta.json" ] && echo "  meta.json     : ok"
