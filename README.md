@@ -16,11 +16,11 @@ Instagram Reels · TikTok · YouTube Shorts & videos
 
 <p align="center">
   <a href="./assets/social-media-analyzer-walkthrough.mp4">
-    <img src="./assets/social-media-analyzer-walkthrough-cover.png" alt="Watch the 28-second Social Media Video Analyzer walkthrough" width="100%" />
+    <img src="./assets/social-media-analyzer-walkthrough.gif" alt="Autoplaying 28-second Social Media Video Analyzer walkthrough" width="100%" />
   </a>
 </p>
 
-<p align="center"><sub>▶ Click the cover to watch the 28-second walkthrough.</sub></p>
+<p align="center"><sub>Autoplays above · Click the animation for the full-quality MP4.</sub></p>
 
 ## What it does
 
