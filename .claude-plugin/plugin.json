@@ -1,0 +1,26 @@
+{
+  "name": "social_media_analyzer",
+  "version": "0.1.0",
+  "description": "Analyze social media videos (Instagram reels, TikTok, YouTube Shorts): download, transcribe audio, sample frames, and pull caption/metadata so an agent can read and analyze them.",
+  "author": {
+    "name": "Ivanxiedata",
+    "url": "https://github.com/Ivanxiedata"
+  },
+  "homepage": "https://github.com/Ivanxiedata/social_media_analyzer",
+  "repository": "https://github.com/Ivanxiedata/social_media_analyzer",
+  "license": "MIT",
+  "keywords": [
+    "instagram",
+    "tiktok",
+    "youtube",
+    "video",
+    "transcript",
+    "whisper",
+    "yt-dlp",
+    "social-media",
+    "content-analysis"
+  ],
+  "skills": [
+    "./skills/social_media_analyzer"
+  ]
+}

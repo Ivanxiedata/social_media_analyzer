@@ -15,11 +15,12 @@ Claude can't watch a video from a URL. This skill downloads the video and turns 
 - Login-gated posts (uses the user's browser cookies)
 
 ## Workflow
-1. Run the script on the URL:
+1. Run the analyzer on the URL:
    ```bash
-   ~/.claude/skills/social_media_analyzer/scripts/analyze-media "<url>"
+   analyze-media "<url>"
    ```
-   Optional 2nd arg is the browser to pull cookies from (default `chrome`), e.g. `... "<url>" firefox`.
+   `install.sh` puts `analyze-media` on your `PATH`. If it isn't found, run the bundled copy at `scripts/analyze-media` inside this skill's directory (your agent runtime tells you that directory when the skill loads; on a Claude Code plugin it's `"$CLAUDE_PLUGIN_ROOT"/skills/social_media_analyzer/scripts/analyze-media`).
+   Optional 2nd arg is the browser to pull cookies from (default `chrome`), e.g. `analyze-media "<url>" firefox`.
 2. It prints the output dir: `~/social-media-analysis/<id>/` containing:
    - `transcript.txt` — whisper transcript of the audio
    - `frames/*.jpg` — 1 frame per 3s (capped at 40)
@@ -38,13 +39,19 @@ When asked about successful/viral patterns, look across transcript + frames + me
 - **Funnel** — soft CTA / product placement (in wardrobe, bio, caption)
 - **Engagement ratio** — likes vs comments vs views from `meta.json`
 
-## First-time setup (one-time, macOS)
+## First-time setup (one-time)
+Run the installer from the repo root — it installs deps, downloads the whisper model, and links the skill + `analyze-media` into place:
+```bash
+./install.sh
+```
+Manual equivalent (macOS/Homebrew):
 ```bash
 brew install yt-dlp whisper-cpp ffmpeg
 mkdir -p ~/.cache/whisper-cpp
 curl -L -o ~/.cache/whisper-cpp/ggml-base.bin \
   https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin
 ```
+On Linux, install `yt-dlp`, `ffmpeg`, and `whisper-cpp` via your package manager (or `pipx install yt-dlp`), then download the model as above.
 
 ## Common issues
 - **"Extracted 0 cookies"** — Chrome cookies couldn't be decrypted; fine for public posts (script auto-retries without cookies). For login-gated content, approve the macOS Keychain prompt for "Chrome Safe Storage", or pass a different browser as the 2nd arg.

@@ -1,0 +1,24 @@
+{
+  "name": "Ivanxiedata",
+  "owner": {
+    "name": "Ivanxiedata",
+    "url": "https://github.com/Ivanxiedata"
+  },
+  "description": "Ivanxiedata's agent skills, as installable Claude Code plugins.",
+  "plugins": [
+    {
+      "name": "social_media_analyzer",
+      "source": "./",
+      "description": "Analyze social media videos: download, transcribe, sample frames, pull caption/metadata.",
+      "category": "content",
+      "keywords": [
+        "instagram",
+        "tiktok",
+        "youtube",
+        "video",
+        "transcript",
+        "social-media"
+      ]
+    }
+  ]
+}
