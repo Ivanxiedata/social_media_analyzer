@@ -1,0 +1,16 @@
+{
+  "name": "social-media-analyzer-walkthrough",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts SocialMediaAnalyzerWalkthrough ../assets/social-media-analyzer-walkthrough.mp4 --public-dir=../assets --codec=h264 --crf=18",
+    "thumbnail": "remotion still src/index.ts SocialMediaAnalyzerWalkthrough ../assets/social-media-analyzer-walkthrough-cover.png --frame=780 --public-dir=../assets"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "^4.0.0"
+  }
+}

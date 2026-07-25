@@ -12,6 +12,16 @@ Instagram Reels · TikTok · YouTube Shorts & videos
 
 </div>
 
+## See it in action
+
+<p align="center">
+  <a href="./assets/social-media-analyzer-walkthrough.mp4">
+    <img src="./assets/social-media-analyzer-walkthrough-cover.png" alt="Watch the 28-second Social Media Video Analyzer walkthrough" width="100%" />
+  </a>
+</p>
+
+<p align="center"><sub>▶ Click the cover to watch the 28-second walkthrough.</sub></p>
+
 ## What it does
 
 Agents cannot reliably watch a social video from its URL alone. This skill creates an analysis-ready bundle from the post:
